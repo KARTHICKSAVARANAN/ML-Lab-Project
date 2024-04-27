@@ -1,0 +1,76 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+df=pd.read_csv('/kaggle/input/road-accident-severity-in-india/Road.csv')
+df.info()
+plt.figure(figsize=(12,8))
+sns.countplot(x='Defect_of_vehicle',hue='Accident_severity',data=df)
+plt.title('Countplot of Defect of Vehicle and Accident_severity')
+plt.show()
+df.drop('Defect_of_vehicle',axis=1,inplace=True) 
+plt.figure(figsize=(12,8))
+sns.countplot(x='Service_year_of_vehicle',hue='Accident_severity',data=df)
+plt.title('Countplot of Service Year of Vehicle and Accident_severity')
+plt.show()
+print((df['Service_year_of_vehicle'].value_counts()/12316)*100)
+print("Nan values: ",(df['Service_year_of_vehicle'].isnull().sum()/12316)*100)
+df['Service_year_of_vehicle']=df['Service_year_of_vehicle'].fillna(df['Service_year_of_vehicle'].mode()[0])
+plt.figure(figsize=(12,8))
+sns.countplot(x='Work_of_casuality',hue='Accident_severity',data=df)
+plt.title("Countplot of Work of Casuality and Accident Severity")
+plt.show()
+df['Work_of_casuality'].fillna('Unknown',inplace=True)
+plt.figure(figsize=(12,8))
+sns.countplot(x='Work_of_casuality',hue='Accident_severity',data=df)
+plt.title("Countplot of Work of Casuality and Accident Severity")
+plt.show()
+plt.figure(figsize=(12,8))
+sns.countplot(x='Fitness_of_casuality',hue='Accident_severity',data=df)
+plt.title("Countplot of Fitness of Casuality and Accident Severity")
+plt.show()
+plt.figure(figsize=(8, 6))
+sns.countplot(x='Sex_of_driver', hue='Accident_severity', data=df)
+plt.title('Count Plot of Sex_of_driver and Accident_severity')
+plt.show()
+df.drop('Fitness_of_casuality',axis=1,inplace=True)
+df.dropna(inplace=True)
+df.describe()
+plt.figure(figsize=(8, 6))
+sns.countplot(x='Sex_of_driver', hue='Accident_severity', data=df)
+plt.title('Count Plot of Sex_of_driver and Accident_severity')
+plt.show()
+pd.crosstab(df['Day_of_week'], df['Accident_severity'])
+plt.figure(figsize=(12,8))
+sns.countplot(x='Age_band_of_driver',hue='Accident_severity',data=df)
+plt.title('Countplot of Age of driver and Accident_severity')
+plt.show()
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+
+# Assuming you have your dataset loaded into a DataFrame named 'data'
+# Your dataset should include columns: "Time", "Day_of_week", "Age_band_of_driver",
+# "Area_accident_occured", "Lanes_or_Medians", "Road_allignment", "Types_of_Junction", and "Severity" (target variable)
+
+# Splitting data into features and target variable
+X = df[["Time", "Day_of_week", "Age_band_of_driver", "Area_accident_occured", "Lanes_or_Medians", "Road_allignment", "Types_of_Junction"]]
+y = df["Accident_severity"]
+
+# Convert categorical variables into dummy/indicator variables
+X = pd.get_dummies(X)
+
+# Splitting data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initiflizing and training the Random Forest Classifier
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_classifier.fit(X_train, y_train)
+
+# Predicting on the test set
+y_pred = rf_classifier.predict(X_test)
+
+# Evaluating the model
+print("accuracy",classification_report(y_test, y_pred))
